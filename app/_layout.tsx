@@ -4,6 +4,7 @@ import { Stack } from 'expo-router'
 const Page = () => {
     return (
       <Stack>
+        <Stack.Screen name="login" options={{title: 'Login'}} />"
         <Stack.Screen name="index" options={{title: 'Home'}} />
       </Stack>
     )
