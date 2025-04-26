@@ -37,3 +37,5 @@ yarn-error.*
 
 #firebase shit
 FirebaseConfig.ts
+#android developer studio files
+/.idea
