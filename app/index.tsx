@@ -1,8 +1,8 @@
-import React, { Component, useState } from 'react'
+import React, { Component, useState, useEffect } from 'react';
 import { Text, View, StyleSheet, Button } from 'react-native'
 import MapView, { PROVIDER_DEFAULT, PROVIDER_GOOGLE, Marker } from 'react-native-maps'
 import { auth } from '../FirebaseConfig'
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth'
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, getAuth, signOut } from 'firebase/auth'
 import { useRouter } from 'expo-router'
 import { collection, getDocs } from "firebase/firestore";
 import { getFirestore } from "firebase/firestore";
@@ -33,6 +33,26 @@ type Place = {
 export default function App() {
   const router = useRouter();
   const [places, setPlaces] = useState<Place[]>([]);
+
+  //monitor auth state changes
+  //if the user is not logged in, immediately punt them to redirect page
+  useEffect(() => {
+    const unsubscribe = getAuth().onAuthStateChanged((user) => {
+      if (!user) {
+        router.push('/login');
+      }
+    });
+    return () => unsubscribe();
+  }, [router]);
+
+  const logOut = async () => {
+    try {
+      await signOut(auth);
+      console.log("Logged out!");
+    } catch (error) {
+      console.error("Logout error: " + error);
+    }
+  };
 
   const retrievePlaces = async () => {
     try {
@@ -67,6 +87,7 @@ export default function App() {
           <View style={{ position: 'absolute', top: 50, left: 20, zIndex: 1 }}>
               <Button title="(testing) Go to Login" onPress={() => router.push('/login')} />
               <Button title="(testing) Retrieve from firestore" onPress={retrievePlaces} />
+              <Button title="(testing) Logout" onPress={logOut} />
           </View>
         
           <MapView style={StyleSheet.absoluteFill} provider={PROVIDER_DEFAULT} initialRegion={INITAL_REGION}>
