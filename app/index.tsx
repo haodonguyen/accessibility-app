@@ -35,6 +35,7 @@ export default function App() {
   const router = useRouter();
   const [places, setPlaces] = useState<Place[]>([]);
   const [placeSubmissionModal, setIsSubmissionModalVisible] = useState(false);
+  const [mapCenterCoordinates, setMapCenterCoordinates] = useState({ latitude: 0, longitude: 0 });
 
   //monitor auth state changes
   //if the user is not logged in, immediately punt them to redirect page
@@ -93,7 +94,7 @@ export default function App() {
               <Button title="(testing) Add place" onPress={() => setIsSubmissionModalVisible(true)} />
           </View>
         
-          <MapView style={StyleSheet.absoluteFill} provider={PROVIDER_DEFAULT} initialRegion={INITAL_REGION}>
+          <MapView style={StyleSheet.absoluteFill} provider={PROVIDER_DEFAULT} initialRegion={INITAL_REGION} onRegionChangeComplete={(region) => setMapCenterCoordinates(region)}>
             {places.map(place => (
 
               <Marker //place markers with the data from firestore
@@ -108,6 +109,11 @@ export default function App() {
               />
             ))}
           </MapView>
+          
+          //aiming reticle
+          <View style={{position: "absolute", top: "50%", left: "50%", transform: [{ translateX: -10 }, { translateY: -10 }], zIndex: 10,}}>
+          <Text>X</Text>
+          </View>
 
           <Modal
             visible={placeSubmissionModal}
@@ -115,9 +121,11 @@ export default function App() {
             transparent={true}
             onRequestClose={() => setIsSubmissionModalVisible(false)}
           >
-            <View>
-              <SubmitPlaceMenu />
-              <Button title="Close" onPress={() => setIsSubmissionModalVisible(false)} />
+            <View style={{ flex: 1 }} pointerEvents="none">
+              <View style={{ backgroundColor: 'white', padding: 0 }} pointerEvents="auto">
+                <SubmitPlaceMenu place_coordinates={mapCenterCoordinates} />
+                <Button title="Close" onPress={() => setIsSubmissionModalVisible(false)} />
+              </View>
             </View>
           </Modal>
       </View>

@@ -8,13 +8,17 @@ import { collection, getDocs, addDoc } from "firebase/firestore";
 import { getFirestore } from "firebase/firestore";
 import { db } from '../FirebaseConfig'; //db instance from firebase config.
 
+type Props = {
+    place_coordinates: { latitude: number; longitude: number };
+}
+
 //todo: coordinate input. im thinking some kind of aiming reticle centered on the map that is used to select coordinates
-export default function submitPlaceMenu() { //a universal menu component we can use to submit a place and upload photos during creation
+export default function submitPlaceMenu({ place_coordinates }: Props) { //a universal menu component we can use to submit a place and upload photos during creation
     const [placeName, setPlaceName] = useState('')
     const [placeDescription, setPlaceDescription] = useState('')
     const [placePhoneNumber, setPlacePhoneNumber] = useState('')
     const [placeAddress, setPlaceAddress] = useState('')
-    const [placeCoordinates, setPlaceCoordinates] = useState({ latitude: 0, longitude: 0 })//dont allow manually inputting!!!
+    const [placeCoordinates, setPlaceCoordinates] = useState(place_coordinates);
     const [placeWheelchair, setPlaceWheelchair] = useState(false) //example accessibility information
 
     const dbInsert = async () => {
@@ -42,6 +46,7 @@ export default function submitPlaceMenu() { //a universal menu component we can 
             <TextInput placeholder='Place description' value={placeDescription} onChangeText={setPlaceDescription} />
             <TextInput placeholder='Place phone number' value={placePhoneNumber} onChangeText={setPlacePhoneNumber} keyboardType='numeric' />
             <TextInput placeholder='Place address' value={placeAddress} onChangeText={setPlaceAddress} />
+            <Text>coords: {placeCoordinates.latitude}, {placeCoordinates.longitude}</Text>
             <Button title='Submit' onPress={dbInsert} />
         </View>
     );
