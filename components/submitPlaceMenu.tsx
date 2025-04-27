@@ -1,13 +1,11 @@
 import React, { Component, useState, useEffect } from 'react';
 import { Text, View, StyleSheet, Button, TextInput, Switch } from 'react-native'
 import MapView, { PROVIDER_DEFAULT, PROVIDER_GOOGLE, Marker } from 'react-native-maps'
-import { auth } from '../FirebaseConfig'
+import { auth, db, googlemapsAPIKey } from '../FirebaseConfig'
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, getAuth, signOut } from 'firebase/auth'
 import { useRouter } from 'expo-router'
 import { collection, getDocs, addDoc } from "firebase/firestore";
 import { getFirestore } from "firebase/firestore";
-import { db } from '../FirebaseConfig'; //db instance from firebase config.
-import { googlemapsAPIkey } from '@/googleApi';
 import axios from 'axios';
 
 type Props = {
@@ -30,7 +28,7 @@ export default function SubmitPlaceMenu({ place_coordinates, onClose }: Props) {
     //with geographical coordinates as input, use google API to resolve for address
     const resolveAddress = async () => {
         const { latitude, longitude } = place_coordinates;
-        const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${googlemapsAPIkey}`;
+        const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${googlemapsAPIKey}`;
 
         try {
             const response = await axios.get(url);

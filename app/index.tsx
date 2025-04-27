@@ -1,12 +1,11 @@
 import React, { Component, useState, useEffect } from 'react';
 import { Text, View, StyleSheet, Button, Modal } from 'react-native'
 import MapView, { PROVIDER_DEFAULT, PROVIDER_GOOGLE, Marker } from 'react-native-maps'
-import { auth } from '../FirebaseConfig'
+import { auth, db } from '../FirebaseConfig'
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, getAuth, signOut } from 'firebase/auth'
 import { useRouter } from 'expo-router'
 import { collection, getDocs } from "firebase/firestore";
 import { getFirestore } from "firebase/firestore";
-import { db } from '../FirebaseConfig'; //db instance from firebase config.
 import SubmitPlaceMenu from '../components/submitPlaceMenu';
 
 const INITAL_REGION = {
