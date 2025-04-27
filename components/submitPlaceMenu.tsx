@@ -7,6 +7,8 @@ import { useRouter } from 'expo-router'
 import { collection, getDocs, addDoc } from "firebase/firestore";
 import { getFirestore } from "firebase/firestore";
 import { db } from '../FirebaseConfig'; //db instance from firebase config.
+import { googlemapsAPIkey } from '@/googleApi';
+import axios from 'axios';
 
 type Props = {
     place_coordinates: { latitude: number; longitude: number };
@@ -24,6 +26,24 @@ export default function SubmitPlaceMenu({ place_coordinates, onClose }: Props) {
     const [blindDescription, setBlindDescription] = useState('')
     const [placeAuditory, setPlaceAuditory] = useState(false)
     const [auditoryDescription, setAuditoryDescription] = useState('')
+
+    //with geographical coordinates as input, use google API to resolve for address
+    const resolveAddress = async () => {
+        const { latitude, longitude } = place_coordinates;
+        const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${googlemapsAPIkey}`;
+
+        try {
+            const response = await axios.get(url);
+            const results = response.data.results;
+            if (results.length > 0) {
+                setPlaceAddress(results[0].formatted_address);
+            } else {
+                console.error('No address found for the given coordinates.');
+            }
+        } catch (error) {
+            console.error('Error fetching address:', error);
+        };
+    }
 
     const dbInsert = async () => {
         try {
@@ -57,6 +77,12 @@ export default function SubmitPlaceMenu({ place_coordinates, onClose }: Props) {
         }
     }
 
+    useEffect(() => {
+        if (place_coordinates.latitude && place_coordinates.longitude) {
+            resolveAddress(); //resolve address whenever coordinates change
+        }
+    }, [place_coordinates]);
+
     return (
         <View style={{ backgroundColor: 'white' }}>
             <Text>Submit a place</Text>
@@ -65,6 +91,7 @@ export default function SubmitPlaceMenu({ place_coordinates, onClose }: Props) {
             <TextInput placeholder='Place phone number' value={placePhoneNumber} onChangeText={setPlacePhoneNumber} keyboardType='numeric' />
             <TextInput placeholder='Place address' value={placeAddress} onChangeText={setPlaceAddress} />
             <Text>(debug) coords: {place_coordinates.latitude}, {place_coordinates.longitude}</Text>
+            <Text>(debug) autoresolved address: {placeAddress}</Text>
             <Button title='Submit' onPress={dbInsert} />
         </View>
     );
