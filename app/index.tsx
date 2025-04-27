@@ -1,5 +1,5 @@
 import React, { Component, useState, useEffect } from 'react';
-import { Text, View, StyleSheet, Button } from 'react-native'
+import { Text, View, StyleSheet, Button, Modal } from 'react-native'
 import MapView, { PROVIDER_DEFAULT, PROVIDER_GOOGLE, Marker } from 'react-native-maps'
 import { auth } from '../FirebaseConfig'
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, getAuth, signOut } from 'firebase/auth'
@@ -7,6 +7,7 @@ import { useRouter } from 'expo-router'
 import { collection, getDocs } from "firebase/firestore";
 import { getFirestore } from "firebase/firestore";
 import { db } from '../FirebaseConfig'; //db instance from firebase config.
+import SubmitPlaceMenu from '../components/submitPlaceMenu';
 
 const INITAL_REGION = {
   latitude: -37.8136,
@@ -33,6 +34,7 @@ type Place = {
 export default function App() {
   const router = useRouter();
   const [places, setPlaces] = useState<Place[]>([]);
+  const [placeSubmissionModal, setIsSubmissionModalVisible] = useState(false);
 
   //monitor auth state changes
   //if the user is not logged in, immediately punt them to redirect page
@@ -88,6 +90,7 @@ export default function App() {
               <Button title="(testing) Go to Login" onPress={() => router.push('/login')} />
               <Button title="(testing) Retrieve from firestore" onPress={retrievePlaces} />
               <Button title="(testing) Logout" onPress={logOut} />
+              <Button title="(testing) Add place" onPress={() => setIsSubmissionModalVisible(true)} />
           </View>
         
           <MapView style={StyleSheet.absoluteFill} provider={PROVIDER_DEFAULT} initialRegion={INITAL_REGION}>
@@ -105,6 +108,19 @@ export default function App() {
               />
             ))}
           </MapView>
+
+          <Modal
+            visible={placeSubmissionModal}
+            animationType="slide"
+            transparent={true}
+            onRequestClose={() => setIsSubmissionModalVisible(false)}
+          >
+            <View>
+              <SubmitPlaceMenu />
+              <Button title="Close" onPress={() => setIsSubmissionModalVisible(false)} />
+            </View>
+          </Modal>
       </View>
   );
 }
+
