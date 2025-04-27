@@ -12,12 +12,16 @@ import { useRouter } from 'expo-router'
 export default function LoginPage() {
     const [email, setEmail] = React.useState('')
     const [password, setPassword] = React.useState('')
+    const [success, setSuccess] = React.useState('')
     const router = useRouter()
 
     const signIn = async () => {
         try {
           const user = await signInWithEmailAndPassword(auth, email, password)
-          if (user) {router.push('/')}
+          if (user) {
+            setSuccess('Successfully logged in!')
+            setTimeout(() => router.push('/'), 2000)
+          }
         } catch (error:any) {
           console.error(error)
           alert('Signin failed: ' + error.message);
@@ -43,6 +47,7 @@ export default function LoginPage() {
                 <Button title='Create Account' onPress={signUp} />
                 <Button title="(testing) Go to Index" onPress={() => router.push('/')} />
             </View>
+            {success ? <Text style={{ color: 'green', marginTop: 10 }}>{success}</Text> : null}
         </View>
     );
 }
