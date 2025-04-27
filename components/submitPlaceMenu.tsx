@@ -10,9 +10,10 @@ import { db } from '../FirebaseConfig'; //db instance from firebase config.
 
 type Props = {
     place_coordinates: { latitude: number; longitude: number };
+    onClose: () => void; //close menu in index
 }
 
-export default function SubmitPlaceMenu({ place_coordinates }: Props) { //a universal menu component we can use to submit a place and upload photos during creation
+export default function SubmitPlaceMenu({ place_coordinates, onClose }: Props) { //a universal menu component we can use to submit a place and upload photos during creation
     const [placeName, setPlaceName] = useState('')
     const [placeDescription, setPlaceDescription] = useState('')
     const [placePhoneNumber, setPlacePhoneNumber] = useState('')
@@ -27,10 +28,13 @@ export default function SubmitPlaceMenu({ place_coordinates }: Props) { //a univ
                 place_phonenumber: placePhoneNumber,
                 place_address: placeAddress,
                 place_coordinates: place_coordinates, //value comes from passed prop
-                place_owner_id: auth.currentUser?.uid, //get the current user id from firebase auth
-                place_wheelchair_accessible: placeWheelchair
+                place_original_submitter_id: auth.currentUser?.uid, //get the current user id from firebaseauth
+                place_owner_id: null, //this should be which account owns the venue and can edit it. if null, anybody shall be able to edit it.
+                place_wheelchair_accessible: placeWheelchair,
+                place_submission_timestamp: new Date().toISOString()
             });
             console.log("DB Insertion complete with ID: ", docRef.id);
+            onClose(); // Close the modal after successful submission
         } catch (error:any) {
             console.error("DB Error: " + error);
         }

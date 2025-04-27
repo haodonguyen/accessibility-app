@@ -118,14 +118,14 @@ return (
           )}
 
           {placeSubmissionModal && (
-          <View
-            style={{position: 'absolute', top: 0, left: 0, right: 0, backgroundColor: 'white', padding: 0, zIndex: 10,}}
-          >
-            <SubmitPlaceMenu place_coordinates={mapCenterCoordinates} />
-            <Button title="Close" onPress={() => setIsSubmissionModalVisible(false)} />
-          </View>
-          )          
-        }
+    <View
+        style={{position: 'absolute', top: 0, left: 0, right: 0, backgroundColor: 'white', padding: 0, zIndex: 10,}}
+    >
+        <SubmitPlaceMenu place_coordinates={mapCenterCoordinates} onClose={() => setIsSubmissionModalVisible(false)} />
+        <Button title="Close" onPress={() => setIsSubmissionModalVisible(false)} />
+    </View>
+      )
+    }
 
       </View>
   );
