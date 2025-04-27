@@ -85,7 +85,7 @@ export default function App() {
     }
   };
   
-  return (
+return (
       <View style={{ flex: 1 }}>
           <View style={{ position: 'absolute', top: 50, left: 20, zIndex: 1 }}>
               <Button title="(testing) Go to Login" onPress={() => router.push('/login')} />
@@ -110,24 +110,23 @@ export default function App() {
             ))}
           </MapView>
           
-          //aiming reticle
-          <View style={{position: "absolute", top: "50%", left: "50%", transform: [{ translateX: -10 }, { translateY: -10 }], zIndex: 10,}}>
+          {/* aiming reticle */}
+          {placeSubmissionModal && (
+          <View style={{ position: "absolute", top: "50%", left: "50%", transform: [{ translateX: -10 }, { translateY: -10 }], zIndex: 10 }}>
           <Text>X</Text>
           </View>
+          )}
 
-          <Modal
-            visible={placeSubmissionModal}
-            animationType="slide"
-            transparent={true}
-            onRequestClose={() => setIsSubmissionModalVisible(false)}
+          {placeSubmissionModal && (
+          <View
+            style={{position: 'absolute', top: 0, left: 0, right: 0, backgroundColor: 'white', padding: 0, zIndex: 10,}}
           >
-            <View style={{ flex: 1 }} pointerEvents="none">
-              <View style={{ backgroundColor: 'white', padding: 0 }} pointerEvents="auto">
-                <SubmitPlaceMenu place_coordinates={mapCenterCoordinates} />
-                <Button title="Close" onPress={() => setIsSubmissionModalVisible(false)} />
-              </View>
-            </View>
-          </Modal>
+            <SubmitPlaceMenu place_coordinates={mapCenterCoordinates} />
+            <Button title="Close" onPress={() => setIsSubmissionModalVisible(false)} />
+          </View>
+          )          
+        }
+
       </View>
   );
 }
