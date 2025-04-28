@@ -7,6 +7,7 @@ import { useRouter } from 'expo-router'
 import { collection, getDocs, addDoc } from "firebase/firestore";
 import { getFirestore } from "firebase/firestore";
 import axios from 'axios';
+import AccessibilityInput from '../components/AccessibilityInput'; //ignore this error it is false
 
 
 //a dedicated page to submit a new place, since i thought the modal overlay menu was too small and limiting
@@ -32,22 +33,34 @@ export default function submitPlace() {
       <TextInput placeholder='Place address' value={placeAddress} onChangeText={setPlaceAddress} />
 
       <Text>Disability information</Text>
-
-      <View style={{ marginBottom: 10, backgroundColor: 'lightblue', padding: 10 }}>
-      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-      <Switch value={placeWheelchair} onValueChange={setPlaceWheelchair} />
-      <Text>Is this place suitable for users of wheelchairs?</Text>
-      </View>
-        <TextInput
-        placeholder="What is wheelchair access like?"
-        value={wheelchairDescription}
-        onChangeText={setWheelchairDescription}
-        multiline={true}
-        style={{
-        backgroundColor: 'white', padding: 10, borderRadius: 5, borderWidth: 1, borderColor: 'gray', marginTop: 10, width: '100%', height: 100, textAlignVertical: 'top',
-        }}
-        />
-      </View>
+      <AccessibilityInput
+        label="Is this place suitable for users of wheelchairs?"
+        switchValue={placeWheelchair}
+        onSwitchChange={setPlaceWheelchair}
+        description={wheelchairDescription}
+        onDescriptionChange={setWheelchairDescription}
+        placeholder="What is wheelchair access like at this place?"
+        backgroundColor="lightcoral"
+      />
+      <AccessibilityInput
+        label="Is this place suitable for people with visual impairments?"
+        switchValue={placeBlind}
+        onSwitchChange={setPlaceBlind}
+        description={blindDescription}
+        onDescriptionChange={setBlindDescription}
+        placeholder="What is visual impairment access like at this place?"
+        backgroundColor="lightblue"
+      />
+      <AccessibilityInput
+        label="Is this place suitable for people with hearing impairments?"
+        switchValue={placeAuditory}
+        onSwitchChange={setPlaceAuditory}
+        description={auditoryDescription}
+        onDescriptionChange={setAuditoryDescription}
+        placeholder="What is hearing impairment access like at this place?"
+        backgroundColor="lightgreen"
+      />            
+            
     </View>
   );
 }
