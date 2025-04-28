@@ -91,6 +91,7 @@ return (
               <Button title="(testing) Retrieve from firestore" onPress={retrievePlaces} />
               <Button title="(testing) Logout" onPress={logOut} />
               <Button title="(testing) Add place" onPress={() => setIsSubmissionModalVisible(true)} />
+              <Button title="(testing) Submit a place" onPress={() => router.push('/submitPlace')} />
           </View>
         
           <MapView style={StyleSheet.absoluteFill} provider={PROVIDER_DEFAULT} initialRegion={INITAL_REGION} onRegionChangeComplete={(region) => setMapCenterCoordinates(region)}>
