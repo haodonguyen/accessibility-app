@@ -23,7 +23,7 @@ const AccessibilityInput: React.FC<inputProps> = ({
   return (
     <View style={[styles.container, { backgroundColor }]}>
     <View style={styles.row}>
-    <Text>{label}</Text>
+    <Text style={{ flex: 1, flexWrap: 'wrap', marginRight: 10 }}>{label}</Text>
     <Switch value={switchValue} onValueChange={onSwitchChange} />
         </View>
         <TextInput
