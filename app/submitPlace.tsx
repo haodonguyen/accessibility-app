@@ -3,7 +3,7 @@ import { Text, View, StyleSheet, Button, TextInput, Switch, ScrollView} from 're
 import MapView, { PROVIDER_DEFAULT, PROVIDER_GOOGLE, Marker } from 'react-native-maps'
 import { auth, db, googlemapsAPIKey } from '../FirebaseConfig'
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, getAuth, signOut } from 'firebase/auth'
-import { useRouter } from 'expo-router'
+import { router, useRouter } from 'expo-router'
 import { collection, getDocs, addDoc } from "firebase/firestore";
 import { getFirestore } from "firebase/firestore";
 import axios from 'axios';
@@ -64,6 +64,7 @@ const dbInsert = async () => {
                 place_auditory_description: auditoryDescription, 
             });
             console.log("DB Insertion complete with ID: ", docRef.id);
+            router.push('/');
         } catch (error:any) {
             console.error("DB Error: " + error);
         }

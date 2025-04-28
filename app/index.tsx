@@ -94,7 +94,7 @@ return (
       <View style={{ flex: 1 }}>
           <View style={{ position: 'absolute', top: 50, left: 20, zIndex: 1 }}>
               <Button title="(testing) Go to Login" onPress={() => router.push('/login')} />
-              <Button title="(testing) Retrieve from firestore" onPress={retrievePlaces} />
+              {/*<Button title="(testing) Retrieve from firestore" onPress={retrievePlaces} />*/}
               <Button title="(testing) Logout" onPress={logOut} />
               {/*<Button title="(testing) Add place" onPress={() => setIsSubmissionModalVisible(true)} />*/}
               <Button title="(testing) Submit a place" onPress={() => router.push('/submitPlace')} />
