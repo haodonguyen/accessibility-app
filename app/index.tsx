@@ -47,6 +47,10 @@ export default function App() {
     return () => unsubscribe();
   }, [router]);
 
+  useEffect(() => {
+    retrievePlaces();
+  }, []);
+
   const logOut = async () => {
     try {
       await signOut(auth);
