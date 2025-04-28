@@ -74,6 +74,12 @@ export default function App() {
           },
           place_owner_id: data.place_owner_id || "missing owner id",
           place_wheelchair_accessible: data.place_wheelchair_accessible || false,
+          place_wheelchair_description: data.place_wheelchair_description || "missing wheelchair accessibility description",
+          place_blind_accessible: data.place_blind_accessible || false,
+          place_blind_description: data.place_blind_description || "missing blind accessibility description",
+          place_auditory_accessible: data.place_auditory_accessible || false,
+          place_auditory_description: data.place_auditory_description || "missing auditory accessibility description",
+          place_submission_timestamp: data.place_submission_timestamp || "unknown submission time",
         };
       });
       console.log("Places retrieved from the Firestore DB:", placesData);
@@ -90,7 +96,7 @@ return (
               <Button title="(testing) Go to Login" onPress={() => router.push('/login')} />
               <Button title="(testing) Retrieve from firestore" onPress={retrievePlaces} />
               <Button title="(testing) Logout" onPress={logOut} />
-              <Button title="(testing) Add place" onPress={() => setIsSubmissionModalVisible(true)} />
+              {/*<Button title="(testing) Add place" onPress={() => setIsSubmissionModalVisible(true)} />*/}
               <Button title="(testing) Submit a place" onPress={() => router.push('/submitPlace')} />
           </View>
         

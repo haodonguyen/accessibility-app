@@ -24,6 +24,23 @@ export default function submitPlace() {
   const [placeAuditory, setPlaceAuditory] = useState(false)
   const [auditoryDescription, setAuditoryDescription] = useState('')
 
+const resolveAddress = async () => {
+  const { latitude, longitude } = place_coordinates;
+  const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${googlemapsAPIKey}`;
+
+  try {
+    const response = await axios.get(url);
+    const results = response.data.results;
+      if (results.length > 0) {
+        setPlaceAddress(results[0].formatted_address);
+      } else {
+        console.error('No address found for the given coordinates.');
+      }
+  } catch (error) {
+        console.error('Error fetching address:', error);
+  };
+}
+
 const dbInsert = async () => {
         try {
             const docRef = await addDoc(collection(db, "places"), {
@@ -52,12 +69,35 @@ const dbInsert = async () => {
         }
     }
 
+    useEffect(() => {
+        if (place_coordinates.latitude && place_coordinates.longitude) {
+            resolveAddress(); //resolve address whenever coordinates change
+        }
+    }, [place_coordinates]);
+
   return (
     <ScrollView style={{ flex: 1 }}>
       <Text>Submit a place</Text>
       <TextInput placeholder='Enter the venue name' value={placeName} onChangeText={setPlaceName} />
       <TextInput placeholder='Enter a description' value={placeDescription} onChangeText={setPlaceDescription} />
       <TextInput placeholder='Venue phone number' value={placePhoneNumber} onChangeText={setPlacePhoneNumber} keyboardType='numeric' />
+      <TextInput placeholder='Move the map to select an address' value={placeAddress} editable={false} />
+      <Text>(debug) coords: {place_coordinates.latitude}, {place_coordinates.longitude}</Text>
+      <View style={{ height: 300, marginBottom: 20 }}>
+        <MapView
+          style={StyleSheet.absoluteFillObject}
+          initialRegion={{
+            latitude: -37.8136,
+            longitude: 144.9631,
+            latitudeDelta: 0.0922,
+            longitudeDelta: 0.0421,
+          }}
+          onRegionChangeComplete={(region) => setPlaceCoordinates({ latitude: region.latitude, longitude: region.longitude })}
+        />
+        <View style={{ position: 'absolute', top: '50%', left: '50%', transform: [{ translateX: -10 }, { translateY: -10 }] }}>
+          <Text style={{ fontWeight: 'bold', color: 'red', textAlign: 'center' }}>X</Text>
+        </View>
+      </View>
 
       <Text>Disability information</Text>
       <AccessibilityInput
