@@ -1,53 +1,186 @@
-import React, { Component } from 'react'
-import { Text, View, StyleSheet, TextInput, Button } from 'react-native'
-import { auth } from '../FirebaseConfig'
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth'
-import { useRouter } from 'expo-router'
+import React, { useState } from 'react';
+import { Text, View, StyleSheet, TextInput, TouchableOpacity, StatusBar } from 'react-native';
+import { auth } from '../FirebaseConfig';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import { useRouter } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
 
-
-//this is only a super simple login page for testing firebase connection!!!
-//you can create an email/password combination with the button, and try login also
-//if you have the wrong password: a warning pops up
-//if you have the right password: you are sent back to the main page
 export default function LoginPage() {
-    const [email, setEmail] = React.useState('')
-    const [password, setPassword] = React.useState('')
-    const [success, setSuccess] = React.useState('')
-    const router = useRouter()
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [success, setSuccess] = useState('');
+    const [error, setError] = useState('');
+    const router = useRouter();
+    const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
     const signIn = async () => {
+        setError('');
+        setSuccess('');
         try {
-          const user = await signInWithEmailAndPassword(auth, email, password)
-          if (user) {
-            setSuccess('Successfully logged in!')
-            setTimeout(() => router.push('/'), 2000)
-          }
-        } catch (error:any) {
-          console.error(error)
-          alert('Signin failed: ' + error.message);
-        };
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            if (userCredential.user) {
+                setSuccess('Successfully logged in!');
+                setTimeout(() => router.push('/'), 1500);
+            }
+        } catch (error: any) {
+            console.error('Sign-in error:', error.message);
+            setError(error.message);
+        }
     };
 
     const signUp = async () => {
-      try {
-        const user = await createUserWithEmailAndPassword(auth, email, password)
-      } catch (error:any) {
-        console.error(error)
-        alert('Signin failed: ' + error.message);
-      };
+        setError('');
+        setSuccess('');
+        try {
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            if (userCredential.user) {
+                setSuccess('Account created successfully! Logging you in...');
+                setTimeout(() => router.push('/'), 2000);
+            }
+        } catch (error: any) {
+            console.error('Sign-up error:', error.message);
+            setError(error.message);
+        }
+    };
+
+    const togglePasswordVisibility = () => {
+        setIsPasswordVisible(!isPasswordVisible);
     };
 
     return (
-        <View>
-            <Text>A login page</Text>
-            <View>
-                <TextInput placeholder='email' value={email} onChangeText={setEmail} />
-                <TextInput placeholder='password' value={password} onChangeText={setPassword} secureTextEntry={true} />
-                <Button title='Sign In' onPress={signIn} />
-                <Button title='Create Account' onPress={signUp} />
-                <Button title="(testing) Go to Index" onPress={() => router.push('/')} />
+        <LinearGradient colors={['#f0f2f5', '#e1e6ed']} style={styles.container}>
+            <StatusBar barStyle="dark-content" />
+            <Text style={styles.title}>Welcome to Our App!</Text>
+            <View style={styles.inputContainer}>
+                <TextInput
+                    style={styles.input}
+                    placeholder="Email Address"
+                    keyboardType="email-address"
+                    value={email}
+                    onChangeText={setEmail}
+                    autoCapitalize="none"
+                />
+                <View style={styles.passwordInputContainer}>
+                    <TextInput
+                        style={styles.passwordInput}
+                        placeholder="Password"
+                        value={password}
+                        onChangeText={setPassword}
+                        secureTextEntry={!isPasswordVisible}
+                    />
+                    <TouchableOpacity onPress={togglePasswordVisibility} style={styles.eyeIcon}>
+                        <Text>{isPasswordVisible ? 'Hide' : 'Show'}</Text>
+                    </TouchableOpacity>
+                </View>
+
+                <TouchableOpacity style={styles.button} onPress={signIn}>
+                    <Text style={styles.buttonText}>Sign In</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.secondaryButton} onPress={signUp}>
+                    <Text style={styles.secondaryButtonText}>Create Account</Text>
+                </TouchableOpacity>
+
+                {error ? <Text style={styles.errorText}>{error}</Text> : null}
+                {success ? <Text style={styles.successText}>{success}</Text> : null}
+
+                {/* For testing purposes, consider removing in production */}
+                {__DEV__ && (
+                    <TouchableOpacity style={styles.testButton} onPress={() => router.push('/')}>
+                        <Text style={styles.testButtonText}>(Testing) Go to Home</Text>
+                    </TouchableOpacity>
+                )}
             </View>
-            {success ? <Text style={{ color: 'green', marginTop: 10 }}>{success}</Text> : null}
-        </View>
+        </LinearGradient>
     );
 }
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 20,
+    },
+    title: {
+        fontSize: 28,
+        fontWeight: 'bold',
+        marginBottom: 30,
+        color: '#333',
+    },
+    inputContainer: {
+        width: '100%',
+        maxWidth: 350,
+    },
+    input: {
+        borderWidth: 1,
+        borderColor: '#ccc',
+        borderRadius: 8,
+        padding: 15,
+        marginBottom: 15,
+        fontSize: 16,
+        backgroundColor: '#fff',
+    },
+    passwordInputContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: '#ccc',
+        borderRadius: 8,
+        marginBottom: 15,
+        backgroundColor: '#fff',
+    },
+    passwordInput: {
+        flex: 1,
+        padding: 15,
+        fontSize: 16,
+    },
+    eyeIcon: {
+        padding: 15,
+        marginRight: 5,
+    },
+    button: {
+        backgroundColor: '#007bff',
+        padding: 15,
+        borderRadius: 8,
+        alignItems: 'center',
+        marginBottom: 15,
+    },
+    buttonText: {
+        color: '#fff',
+        fontSize: 18,
+        fontWeight: 'bold',
+    },
+    secondaryButton: {
+        backgroundColor: 'transparent',
+        padding: 15,
+        borderRadius: 8,
+        alignItems: 'center',
+        borderWidth: 1,
+        borderColor: '#007bff',
+    },
+    secondaryButtonText: {
+        color: '#007bff',
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
+    errorText: {
+        color: 'red',
+        marginTop: 10,
+    },
+    successText: {
+        color: 'green',
+        marginTop: 10,
+    },
+    testButton: {
+        backgroundColor: '#ddd',
+        padding: 10,
+        borderRadius: 5,
+        alignItems: 'center',
+        marginTop: 20,
+    },
+    testButtonText: {
+        color: '#333',
+        fontSize: 14,
+    },
+});
