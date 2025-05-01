@@ -89,7 +89,7 @@ export default function App() {
                     place_submission_timestamp: data.place_submission_timestamp || 'unknown submission time',
                 } as Place; // Type assertion
             });
-            console.log('Places retrieved from the Firestore DB:', placesData);
+            console.log(`Fetched ${placesData.length} total places.`);
             setAllPlaces(placesData);
             setPlaces(placesData); // Initially, display all places
         } catch (error) {
