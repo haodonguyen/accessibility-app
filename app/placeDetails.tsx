@@ -74,7 +74,7 @@ export default function placeDetails() {
 
       <Text>===Disability Information===</Text>
 {/*convert the "true/false in the firestore to actual strings*/}
-      <Text>Wheelchair Accessibility: {place?.wheelchair_accessible !== undefined ? (place.wheelchair_accessible ? 'Yes' : 'No') : 'Data missing'}</Text>
+      <Text>Wheelchair Accessibility: {place?.place_wheelchair_accessible !== undefined ? (place.place_wheelchair_accessible ? 'Yes' : 'No') : 'Data missing'}</Text>
       <Text>Vision Accessibility: {place?.place_blind_accessible !== undefined ? (place.place_blind_accessible ? 'Yes' : 'No') : 'Data missing'}</Text>
       <Text>Hearing Accessibility: {place?.place_auditory_accessible !== undefined ? (place.place_auditory_accessible ? 'Yes' : 'No') : 'Data missing'}</Text>
 
