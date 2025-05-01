@@ -135,6 +135,7 @@ export default function App() {
                         }}
                         title={place.place_name}
                         description={place.place_description}
+                        onPress={() => router.push(`/placeDetails?id=${place.id}`)} // Pass the place ID as a query parameter
                     />
                 ))}
             </MapView>
