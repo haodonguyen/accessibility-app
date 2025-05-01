@@ -8,6 +8,8 @@ import { collection, getDocs, addDoc } from "firebase/firestore";
 import { getFirestore } from "firebase/firestore";
 import axios from 'axios';
 import AccessibilityInput from '../components/AccessibilityInput'; //ignore this error it is false
+import * as ImagePicker from 'expo-image-picker';
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 
 //a dedicated page to submit a new place, since i thought the modal overlay menu was too small and limiting
@@ -23,6 +25,27 @@ export default function submitPlace() {
   const [blindDescription, setBlindDescription] = useState('')
   const [placeAuditory, setPlaceAuditory] = useState(false)
   const [auditoryDescription, setAuditoryDescription] = useState('')
+  const [selectedPhotos, setSelectedPhotos] = useState<string[]>([]); //store uri of selected photos so we can upload them to firestore later
+
+const photoPicker = async () => { //todo: make this allow multiple selection
+  try {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images, //todo: fix the deprecation warning
+      allowsEditing: false,
+      quality: 1,
+    });
+
+    if (!result.canceled && result.assets) {
+      setSelectedPhotos((prevPhotos) => [
+        ...prevPhotos,
+        ...result.assets.map((asset) => asset.uri),
+      ]);
+    }
+  } catch (error) {
+    console.error("Error selecting photos:", error);
+  }
+};
+
 
 const resolveAddress = async () => {
   const { latitude, longitude } = place_coordinates;
@@ -41,7 +64,7 @@ const resolveAddress = async () => {
   };
 }
 
-const dbInsert = async () => {
+const submitPlace = async () => {
         try {
             const docRef = await addDoc(collection(db, "places"), {
                 place_name: placeName,
@@ -63,6 +86,23 @@ const dbInsert = async () => {
                 place_auditory_accessible: placeAuditory, //is this place accessible for deaf & hearing impaired?
                 place_auditory_description: auditoryDescription, 
             });
+            const storage = getStorage();
+            const uploadedPhotoURLs: string[] = [];
+            for (const photo of selectedPhotos) {
+              var number = 1;
+              const response = await fetch(photo);
+              const blob = await response.blob();
+              //photo location convention is like this
+              //  photos/place_id/1.jpg
+              //we do dbinsertion first so we get the placeid
+              //this will make it easier to find the photos later since theyre associated with the place id
+              const storageRef = ref(storage, `photos/${docRef.id}/${number}`); 
+              await uploadBytes(storageRef, blob);
+              const downloadURL = await getDownloadURL(storageRef);
+              uploadedPhotoURLs.push(downloadURL);
+              console.log(`Uploaded photo ${number} at URL ${downloadURL}! For place ID ${docRef.id} with name ${placeName}`);
+              number++;
+            };
             console.log("DB Insertion complete with ID: ", docRef.id);
             router.push('/');
         } catch (error:any) {
@@ -100,6 +140,8 @@ const dbInsert = async () => {
         </View>
       </View>
 
+      <Button title='Select photos' onPress={photoPicker} />
+
       <Text>Disability information</Text>
       <AccessibilityInput
         label="Is this place suitable for users of wheelchairs?"
@@ -129,7 +171,7 @@ const dbInsert = async () => {
         backgroundColor="lightgreen"
       />
 
-      <Button title='Submit' onPress={dbInsert} />
+      <Button title='Submit' onPress={submitPlace} />
     </ScrollView>
   );
 }
