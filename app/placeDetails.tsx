@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Text, ScrollView, Image, StyleSheet } from 'react-native';
+import { Text, ScrollView, Image, StyleSheet, View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../FirebaseConfig';
@@ -87,7 +87,11 @@ export default function placeDetails() {
 
       <Text>===Photos===</Text>
       {photoURLs.length > 0 ? (
-        <Image source={{ uri: photoURLs[0] }} style={styles.photo} />
+        <View style={styles.photoGrid}>
+          {photoURLs.map((url, index) => (
+            <Image key={index} source={{ uri: url }} style={styles.photo} />
+          ))}
+        </View>
       ) : (
         <Text>No photos (takes a few seconds to load. if this persists for more than 5 seconds, there's probably nothing)</Text>
       )}
@@ -97,9 +101,14 @@ export default function placeDetails() {
 
 const styles = StyleSheet.create({
   photo: {
-    width: 300,
-    height: 200,
+    width: 100,
+    height: 100,
     marginVertical: 10,
     alignSelf: 'center',
+  },
+  photoGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
   },
 });
