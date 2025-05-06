@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Text, ScrollView, Image, StyleSheet, View } from 'react-native';
+import { Text, ScrollView, Image, StyleSheet, View, Button } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { doc, getDoc } from 'firebase/firestore';
+import { useRouter } from 'expo-router';
 import { db } from '../FirebaseConfig';
 import { getStorage, ref, listAll, getDownloadURL } from 'firebase/storage';
 
@@ -10,6 +11,13 @@ export default function placeDetails() {
   const [place, setPlace] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [photoURLs, setPhotoURLs] = useState<string[]>([]);
+
+  const router = useRouter();
+
+  const startRouting = () => {
+    console.log('Start routing to:', place?.place_coordinates);
+    router.push(`/index?routeLatitude=${place.place_coordinates.latitude}&routeLongitude=${place.place_coordinates.longitude}`);
+  };
 
   useEffect(() => {
     const fetchPlaceDetails = async () => {
@@ -95,6 +103,10 @@ export default function placeDetails() {
       ) : (
         <Text>No photos (takes a few seconds to load. if this persists for more than 5 seconds, there's probably nothing)</Text>
       )}
+
+      <Button title="Navigate Here" onPress={startRouting} />
+
+
     </ScrollView>
   );
 }

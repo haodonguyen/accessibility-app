@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Text, View, StyleSheet, Button, Modal } from 'react-native';
-import MapView, { PROVIDER_DEFAULT, PROVIDER_GOOGLE, Marker } from 'react-native-maps';
+import MapView, { PROVIDER_DEFAULT, PROVIDER_GOOGLE, Marker, Polyline } from 'react-native-maps';
 import { auth, db } from '../FirebaseConfig';
 import { getAuth, signOut } from 'firebase/auth';
 import { useRouter } from 'expo-router';
 import { collection, getDocs } from 'firebase/firestore';
+import * as Expo_location from 'expo-location';
 import SubmitPlaceMenu from '../components/submitPlaceMenu';
 import SearchBar from './SearchBar'; // Import the SearchBar component
 
@@ -41,6 +42,7 @@ export default function App() {
     const [places, setPlaces] = useState<Place[]>([]); // Store the filtered places to display on the map
     const [placeSubmissionModal, setIsSubmissionModalVisible] = useState(false);
     const [mapCenterCoordinates, setMapCenterCoordinates] = useState({ latitude: 0, longitude: 0 });
+    const [currentLocation, setCurrentLocation] = useState<{ latitude: number; longitude: number } | null>(null);
 
     useEffect(() => {
         const unsubscribe = getAuth().onAuthStateChanged((user) => {
@@ -54,6 +56,44 @@ export default function App() {
     useEffect(() => {
         retrievePlaces();
     }, []);
+
+    useEffect(() => {
+        let locationSubscription: Expo_location.LocationSubscription | null = null;
+
+        const startLocationUpdates = async () => {
+            try {
+                const { status } = await Expo_location.requestForegroundPermissionsAsync();
+                if (status !== 'granted') {
+                    alert('User denied location permissions');
+                    return;
+                }
+                locationSubscription = await Expo_location.watchPositionAsync(
+                    {
+                        accuracy: Expo_location.Accuracy.High,
+                        timeInterval: 5000, //every 5 seconds
+                        distanceInterval: 0,
+                    },
+                    (location) => {
+                        console.log('Updated location:', location);
+                        setCurrentLocation({
+                            latitude: location.coords.latitude,
+                            longitude: location.coords.longitude,
+                        });
+                    }
+                );
+            } catch (error) {
+                console.error('Location Error:', error);
+            }
+        };
+
+        startLocationUpdates();
+        return () => {
+            if (locationSubscription) {
+                locationSubscription.remove();
+            }
+        };
+    }, 
+    []);
 
     const logOut = async () => {
         try {
@@ -139,6 +179,10 @@ export default function App() {
                     />
                 ))}
             </MapView>
+
+            <View>
+                <Text>Current Location: {currentLocation?.latitude}, {currentLocation?.longitude}</Text>
+            </View>
 
             {placeSubmissionModal && (
                 <View
