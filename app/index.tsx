@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Text, View, StyleSheet, Button, Modal } from 'react-native';
 import MapView, { PROVIDER_DEFAULT, PROVIDER_GOOGLE, Marker, Polyline } from 'react-native-maps';
-import { auth, db } from '../FirebaseConfig';
+import { auth, db, googlemapsAPIKey } from '../FirebaseConfig';
 import { getAuth, signOut } from 'firebase/auth';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { collection, getDocs } from 'firebase/firestore';
 import * as Expo_location from 'expo-location';
+import MapViewDirections from 'react-native-maps-directions';
 import SubmitPlaceMenu from '../components/submitPlaceMenu';
 import SearchBar from './SearchBar'; // Import the SearchBar component
+
 
 const INITAL_REGION = {
     latitude: -37.8136,
@@ -43,6 +45,26 @@ export default function App() {
     const [placeSubmissionModal, setIsSubmissionModalVisible] = useState(false);
     const [mapCenterCoordinates, setMapCenterCoordinates] = useState({ latitude: 0, longitude: 0 });
     const [currentLocation, setCurrentLocation] = useState<{ latitude: number; longitude: number } | null>(null);
+    const [destinationCoordinates, setDestinationCoordinates] = useState<{ latitude: number; longitude: number } | null>(null);
+
+    const searchParams = useLocalSearchParams();
+
+    useEffect(() => { //get coordinates for our target from url parameters (they only exist when passed from placeDetails.tsx if you click "navigate here")
+        const latitude = searchParams.latitude;
+        const longitude = searchParams.longitude;
+
+        if (
+            latitude && longitude &&
+            (!destinationCoordinates || 
+             destinationCoordinates.latitude !== parseFloat(latitude as string) || 
+             destinationCoordinates.longitude !== parseFloat(longitude as string))
+        ) {
+            setDestinationCoordinates({
+                latitude: parseFloat(latitude as string),
+                longitude: parseFloat(longitude as string),
+            });
+        }
+    }, [searchParams, destinationCoordinates]);
 
     useEffect(() => {
         const unsubscribe = getAuth().onAuthStateChanged((user) => {
@@ -71,7 +93,7 @@ export default function App() {
                     {
                         accuracy: Expo_location.Accuracy.High,
                         timeInterval: 5000, //every 5 seconds
-                        distanceInterval: 0,
+                        distanceInterval: 10, //only every 10 meters, neccessary to stop the directions route from constantly re-rendering
                     },
                     (location) => {
                         console.log('Updated location:', location);
@@ -153,6 +175,10 @@ export default function App() {
                 <Button title="(testing) Go to Login" onPress={() => router.push('/login')} />
                 <Button title="(testing) Logout" onPress={logOut} />
                 <Button title="(testing) Submit a place" onPress={() => router.push('/submitPlace')} />
+                {/*clear destination coordinate state and also clear URL parameters*/}
+                {destinationCoordinates && ( <Button title="Stop Routing" onPress={() => {
+                    setDestinationCoordinates(null);
+                    router.replace('/'); }} />)}
             </View>
 
             {/* Search Bar */}
@@ -178,6 +204,17 @@ export default function App() {
                         onPress={() => router.push(`/placeDetails?id=${place.id}`)} // Pass the place ID as a query parameter
                     />
                 ))}
+
+                {currentLocation && destinationCoordinates && ( //if we have both states, render the MapViewDirections component
+                    <MapViewDirections
+                        origin={currentLocation} //should be the current location of the user
+                        destination={destinationCoordinates} 
+                        apikey={googlemapsAPIKey} //from firebaseconfig.tsx
+                        strokeWidth={5}
+                        strokeColor="red"
+                    />
+                )}
+                    
             </MapView>
 
             <View>

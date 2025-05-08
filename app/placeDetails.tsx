@@ -16,7 +16,7 @@ export default function placeDetails() {
 
   const startRouting = () => {
     console.log('Start routing to:', place?.place_coordinates);
-    router.push(`/index?routeLatitude=${place.place_coordinates.latitude}&routeLongitude=${place.place_coordinates.longitude}`);
+    router.push(`/?latitude=${place.place_coordinates.latitude}&longitude=${place.place_coordinates.longitude}`);
   };
 
   useEffect(() => {
