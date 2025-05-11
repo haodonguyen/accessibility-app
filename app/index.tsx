@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Text, View, StyleSheet, Button, Modal } from 'react-native';
+import { Text, View, StyleSheet, Button, Modal, TouchableOpacity } from 'react-native';
 import MapView, { PROVIDER_DEFAULT, PROVIDER_GOOGLE, Marker, Polyline } from 'react-native-maps';
 import { auth, db, googlemapsAPIKey } from '../FirebaseConfig';
 import { getAuth, signOut } from 'firebase/auth';
@@ -8,8 +8,8 @@ import { collection, getDocs } from 'firebase/firestore';
 import * as Expo_location from 'expo-location';
 import MapViewDirections from 'react-native-maps-directions';
 import SubmitPlaceMenu from '../components/submitPlaceMenu';
-import SearchBar from './SearchBar'; // Import the SearchBar component
-
+import SearchBar from './searchBar'; // Import the SearchBar component
+import { FontAwesome } from '@expo/vector-icons'; // Import FontAwesome for the icon
 
 const INITAL_REGION = {
     latitude: -37.8136,
@@ -38,6 +38,30 @@ type Place = {
     place_submission_timestamp?: string;
 };
 
+const styles = StyleSheet.create({
+    logoutButtonContainer: {
+        position: 'absolute',
+        bottom: 20,
+        right: 20,
+        zIndex: 10,
+    },
+    logoutButton: {
+        backgroundColor: '#f44336',
+        borderRadius: 5,
+        paddingVertical: 10,
+        paddingHorizontal: 15,
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    logoutIcon: {
+        marginRight: 8,
+    },
+    logoutText: {
+        color: 'white',
+        fontSize: 16,
+    },
+});
+
 export default function App() {
     const router = useRouter();
     const [allPlaces, setAllPlaces] = useState<Place[]>([]); // Store all places fetched from Firestore
@@ -55,9 +79,9 @@ export default function App() {
 
         if (
             latitude && longitude &&
-            (!destinationCoordinates || 
-             destinationCoordinates.latitude !== parseFloat(latitude as string) || 
-             destinationCoordinates.longitude !== parseFloat(longitude as string))
+            (!destinationCoordinates ||
+                destinationCoordinates.latitude !== parseFloat(latitude as string) ||
+                destinationCoordinates.longitude !== parseFloat(longitude as string))
         ) {
             setDestinationCoordinates({
                 latitude: parseFloat(latitude as string),
@@ -114,8 +138,8 @@ export default function App() {
                 locationSubscription.remove();
             }
         };
-    }, 
-    []);
+    },
+        []);
 
     const logOut = async () => {
         try {
@@ -173,12 +197,12 @@ export default function App() {
         <View style={{ flex: 1 }}>
             <View style={{ position: 'absolute', bottom: 50, left: 20, zIndex: 1 }}>
                 <Button title="(testing) Go to Login" onPress={() => router.push('/login')} />
-                <Button title="(testing) Logout" onPress={logOut} />
                 <Button title="(testing) Submit a place" onPress={() => router.push('/submitPlace')} />
                 {/*clear destination coordinate state and also clear URL parameters*/}
-                {destinationCoordinates && ( <Button title="Stop Routing" onPress={() => {
+                {destinationCoordinates && (<Button title="Stop Routing" onPress={() => {
                     setDestinationCoordinates(null);
-                    router.replace('/'); }} />)}
+                    router.replace('/');
+                }} />)}
             </View>
 
             {/* Search Bar */}
@@ -208,13 +232,13 @@ export default function App() {
                 {currentLocation && destinationCoordinates && ( //if we have both states, render the MapViewDirections component
                     <MapViewDirections
                         origin={currentLocation} //should be the current location of the user
-                        destination={destinationCoordinates} 
+                        destination={destinationCoordinates}
                         apikey={googlemapsAPIKey} //from firebaseconfig.tsx
                         strokeWidth={5}
                         strokeColor="red"
                     />
                 )}
-                    
+
             </MapView>
 
             <View>
@@ -237,6 +261,14 @@ export default function App() {
                     <Button title="Close" onPress={() => setIsSubmissionModalVisible(false)} />
                 </View>
             )}
+
+            {/* Logout Button */}
+            <View style={styles.logoutButtonContainer}>
+                <TouchableOpacity style={styles.logoutButton} onPress={logOut}>
+                    <FontAwesome name="sign-out" size={20} color="white" style={styles.logoutIcon} />
+                    <Text style={styles.logoutText}>Logout</Text>
+                </TouchableOpacity>
+            </View>
         </View>
     );
 }

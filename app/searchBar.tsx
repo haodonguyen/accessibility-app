@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import { View, TextInput, StyleSheet } from 'react-native';
 import { Feather } from '@expo/vector-icons'; // Or any other icon library you prefer
 
-interface SearchBarProps {
+interface searchBarProps {
     onSearch: (searchText: string) => void;
 }
 
-const SearchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
+const searchBar: React.FC<SearchBarProps> = ({ onSearch }) => {
     const [searchText, setSearchText] = useState('');
 
     const handleSearchTextChange = (text: string) => {
@@ -51,4 +51,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default SearchBar;
+export default searchBar;
