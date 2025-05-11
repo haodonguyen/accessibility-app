@@ -6,8 +6,87 @@ import { useRouter } from 'expo-router';
 import { db } from '../FirebaseConfig';
 import { getStorage, ref, listAll, getDownloadURL } from 'firebase/storage';
 
+const styles = StyleSheet.create({
+  container: {
+    flexGrow: 1,
+    padding: 20,
+    backgroundColor: '#f4f4f4',
+  },
+  header: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 15,
+    color: '#333',
+    textAlign: 'center',
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginTop: 20,
+    marginBottom: 10,
+    color: '#555',
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
+    paddingBottom: 5,
+  },
+  infoText: {
+    fontSize: 16,
+    marginBottom: 8,
+    color: '#666',
+  },
+  accessibilityInfo: {
+    fontSize: 16,
+    marginBottom: 5,
+    color: '#777',
+  },
+  accessibilityLabel: {
+    fontWeight: 'bold',
+    color: '#555',
+  },
+  photoGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-around',
+    marginTop: 10,
+  },
+  photoContainer: {
+    width: '48%', // Two photos per row with some spacing
+    aspectRatio: 1,
+    marginBottom: 10,
+    borderRadius: 8,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 3,
+  },
+  photo: {
+    flex: 1,
+    resizeMode: 'cover',
+  },
+  noPhotosText: {
+    fontSize: 16,
+    color: '#888',
+    marginTop: 10,
+    textAlign: 'center',
+  },
+  navigateButton: {
+    backgroundColor: '#007bff',
+    paddingVertical: 12,
+    borderRadius: 8,
+    marginTop: 25,
+  },
+  navigateButtonText: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+});
+
 export default function placeDetails() {
-  const { id } = useLocalSearchParams(); 
+  const { id } = useLocalSearchParams();
   const [place, setPlace] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [photoURLs, setPhotoURLs] = useState<string[]>([]);
@@ -64,63 +143,64 @@ export default function placeDetails() {
 
   if (loading) {
     return (
-    <Text>Loading...</Text>
-    )
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <Text style={{ fontSize: 18, color: '#777' }}>Loading place details...</Text>
+      </View>
+    );
   }
 
   console.log('Photo URLs:', photoURLs);
 
   return (
-    <ScrollView>
-      <Text>===Place ID: {id || 'Data missing'}===</Text>
-      <Text>Name: {place?.place_name || 'Data missing'}</Text>
-      <Text>Description: {place?.place_description || 'Data missing'}</Text>
-      <Text>Address: {place?.place_address || 'Data missing'}</Text>
-      <Text>Phone: {place?.place_phonenumber || 'Data missing'}</Text>
-      <Text>Submitted at: {place?.place_submission_timestamp ? new Date(place.place_submission_timestamp).toLocaleString() : 'Data missing'}
+    <ScrollView style={styles.container}>
+      <Text style={styles.header}>{place?.place_name || 'Place Details'}</Text>
+
+      <Text style={styles.sectionTitle}>General Information</Text>
+      <Text style={styles.infoText}>Address: {place?.place_address || 'Data missing'}</Text>
+      <Text style={styles.infoText}>Phone: {place?.place_phonenumber || 'Data missing'}</Text>
+      <Text style={styles.infoText}>Submitted at: {place?.place_submission_timestamp ? new Date(place.place_submission_timestamp).toLocaleString() : 'Data missing'}
       </Text>
+      {place?.place_description && <Text style={styles.infoText}>Description: {place.place_description}</Text>}
 
-      <Text>===Disability Information===</Text>
-{/*convert the "true/false in the firestore to actual strings*/}
-      <Text>Wheelchair Accessibility: {place?.place_wheelchair_accessible !== undefined ? (place.place_wheelchair_accessible ? 'Yes' : 'No') : 'Data missing'}</Text>
-      <Text>Vision Accessibility: {place?.place_blind_accessible !== undefined ? (place.place_blind_accessible ? 'Yes' : 'No') : 'Data missing'}</Text>
-      <Text>Hearing Accessibility: {place?.place_auditory_accessible !== undefined ? (place.place_auditory_accessible ? 'Yes' : 'No') : 'Data missing'}</Text>
-
+      <Text style={styles.sectionTitle}>Accessibility Information</Text>
+      <Text style={styles.accessibilityInfo}>
+        <Text style={styles.accessibilityLabel}>Wheelchair Accessibility:</Text> {place?.place_wheelchair_accessible !== undefined ? (place.place_wheelchair_accessible ? 'Yes' : 'No') : 'Data missing'}
+      </Text>
       {place?.place_wheelchair_description && (
-        <Text>Wheelchair Accessibility Description: {place.place_wheelchair_description}</Text>)}
-      {place?.place_blind_description && (
-        <Text>Vision Accessility Description: {place.place_blind_description}</Text>)}
-      {place?.place_auditordescription && (
-        <Text>Hearing Accessibility Description: {place.place_auditory_description}</Text>)}
+        <Text style={styles.accessibilityInfo}>
+          <Text style={styles.accessibilityLabel}>Details:</Text> {place.place_wheelchair_description}
+        </Text>)}
 
-      <Text>===Photos===</Text>
+      <Text style={styles.accessibilityInfo}>
+        <Text style={styles.accessibilityLabel}>Vision Accessibility:</Text> {place?.place_blind_accessible !== undefined ? (place.place_blind_accessible ? 'Yes' : 'No') : 'Data missing'}
+      </Text>
+      {place?.place_blind_description && (
+        <Text style={styles.accessibilityInfo}>
+          <Text style={styles.accessibilityLabel}>Details:</Text> {place.place_blind_description}
+        </Text>)}
+
+      <Text style={styles.accessibilityInfo}>
+        <Text style={styles.accessibilityLabel}>Hearing Accessibility:</Text> {place?.place_auditory_accessible !== undefined ? (place.place_auditory_accessible ? 'Yes' : 'No') : 'Data missing'}
+      </Text>
+      {place?.place_auditory_description && (
+        <Text style={styles.accessibilityInfo}>
+          <Text style={styles.accessibilityLabel}>Details:</Text> {place.place_auditory_description}
+        </Text>)}
+
+      <Text style={styles.sectionTitle}>Photos</Text>
       {photoURLs.length > 0 ? (
         <View style={styles.photoGrid}>
           {photoURLs.map((url, index) => (
-            <Image key={index} source={{ uri: url }} style={styles.photo} />
+            <View key={index} style={styles.photoContainer}>
+              <Image source={{ uri: url }} style={styles.photo} />
+            </View>
           ))}
         </View>
       ) : (
-        <Text>No photos (takes a few seconds to load. if this persists for more than 5 seconds, there's probably nothing)</Text>
+        <Text style={styles.noPhotosText}>No photos available (may take a few seconds to load).</Text>
       )}
 
-      <Button title="Navigate Here" onPress={startRouting} />
-
-
+      <Button title="Navigate Here" style={styles.navigateButton} onPress={startRouting} />
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  photo: {
-    width: 100,
-    height: 100,
-    marginVertical: 10,
-    alignSelf: 'center',
-  },
-  photoGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-  },
-});
