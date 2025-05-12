@@ -248,7 +248,11 @@ export default function placeDetails() {
       <Button title="Write a Review" onPress={() => router.push(`writeReview/?place=${id}`)}/>
 
       <Text style={styles.sectionTitle}>Reviews</Text>
-      <Text>{reviewPercentage(reviews)}% of reviewers recommend this place ({reviewClassification(reviewPercentage(reviews))})</Text>
+      {reviews.length > 0 && (
+        <Text>
+          {reviewPercentage(reviews)}% of reviewers recommend this place ({reviewClassification(reviewPercentage(reviews))})
+        </Text>
+      )}
       {reviews.length > 0 ? (
         reviews.map((review, index) => (
           <View key={index} style={{ marginVertical: 10 }}>
@@ -262,7 +266,7 @@ export default function placeDetails() {
           </View>
         ))
       ) : (
-        <Text>no reviews available</Text>
+        <Text>No reviews available</Text>
       )}
 
     </ScrollView>
