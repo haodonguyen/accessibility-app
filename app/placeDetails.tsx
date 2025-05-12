@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Text, ScrollView, Image, StyleSheet, View, Button } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, query, collection, where, getDocs } from 'firebase/firestore';
 import { useRouter } from 'expo-router';
 import { db } from '../FirebaseConfig';
 import { getStorage, ref, listAll, getDownloadURL } from 'firebase/storage';
@@ -90,6 +90,7 @@ export default function placeDetails() {
   const [place, setPlace] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [photoURLs, setPhotoURLs] = useState<string[]>([]);
+  const [reviews, setReviews] = useState<any[]>([]);
 
   const router = useRouter();
 
@@ -106,7 +107,7 @@ export default function placeDetails() {
           const docSnap = await getDoc(docRef);
           if (docSnap.exists()) {
             const placeData = docSnap.data();
-            console.log('Fetched place details:', placeData); //debugging
+            console.log('Fetched place details:', placeData);
             setPlace(placeData);
           } else {
             console.error('No such document!');
@@ -125,7 +126,7 @@ export default function placeDetails() {
     const getPhotos = async () => {
       const storage = getStorage();
       try {
-        const photosRef = ref(storage, `photos/${id}/`); //photos will always be here because thats how we upload them in submitplace menu
+        const photosRef = ref(storage, `photos/${id}/`);
         const photoList = await listAll(photosRef);
         const urls = await Promise.all(
           photoList.items.map((item) => getDownloadURL(item))
@@ -137,8 +138,27 @@ export default function placeDetails() {
       }
     };
 
+    const getReviews = async () => {
+      try {
+        const placeReference = doc(db, 'places', id);
+
+        const getReviewsQuery = query(
+          collection(db, 'reviews'),
+          where('review_placeid', '==', placeReference)
+        );
+        const querySnapshot = await getDocs(getReviewsQuery);
+
+        const reviewsData = querySnapshot.docs.map((doc) => doc.data());
+        console.log('Fetched reviews:', reviewsData);
+        setReviews(reviewsData);
+      } catch (error) {
+        console.error('Error fetching reviews:', error);
+      }
+    };
+
     fetchPlaceDetails();
     getPhotos();
+    getReviews();
   }, [id]);
 
   if (loading) {
@@ -201,6 +221,24 @@ export default function placeDetails() {
       )}
 
       <Button title="Navigate Here" style={styles.navigateButton} onPress={startRouting} />
+
+      <Text style={styles.sectionTitle}>Reviews</Text>
+      {reviews.length > 0 ? (
+        reviews.map((review, index) => (
+          <View key={index} style={{ marginVertical: 10 }}>
+            <Text>{review.recommended !== undefined ? (review.recommended ? '👍 Recommended' : '👎 Not Recommended') : 'Recommendation Missing'}</Text>
+            <Text>Comment: {review.review_text || 'Missing text'}</Text>
+            <Text>Wheelchair Accessibility Rating: {review.review_wheelchair_rating || 'n.a'}/5 </Text>
+            <Text>Visual Accessibility Rating: {review.review_blind_rating || 'n.a'}/5 </Text>
+            <Text>Auditory Accessibility Rating: {review.review_auditory_rating || 'n.a'}/5 </Text>
+            <Text>Author ID: {review.review_authorid || 'Missing ID'}</Text>
+            <Text>{review.review_timestamp? new Date(review.review_timestamp.seconds * 1000).toLocaleString(): 'Missing timestamp'}</Text>
+          </View>
+        ))
+      ) : (
+        <Text>no reviews available</Text>
+      )}
+
     </ScrollView>
   );
 }
