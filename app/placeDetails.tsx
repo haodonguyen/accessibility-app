@@ -221,6 +221,7 @@ export default function placeDetails() {
       )}
 
       <Button title="Navigate Here" style={styles.navigateButton} onPress={startRouting} />
+      <Button title="Write a Review" onPress={() => router.push(`writeReview/?place=${id}`)}/>
 
       <Text style={styles.sectionTitle}>Reviews</Text>
       {reviews.length > 0 ? (
@@ -232,7 +233,7 @@ export default function placeDetails() {
             <Text>Visual Accessibility Rating: {review.review_blind_rating || 'n.a'}/5 </Text>
             <Text>Auditory Accessibility Rating: {review.review_auditory_rating || 'n.a'}/5 </Text>
             <Text>Author ID: {review.review_authorid || 'Missing ID'}</Text>
-            <Text>{review.review_timestamp? new Date(review.review_timestamp.seconds * 1000).toLocaleString(): 'Missing timestamp'}</Text>
+            <Text>{review.review_timestamp ? new Date(review.review_timestamp).toLocaleString(): 'Missing timestamp'}</Text>
           </View>
         ))
       ) : (
