@@ -99,6 +99,30 @@ export default function placeDetails() {
     router.push(`/?latitude=${place.place_coordinates.latitude}&longitude=${place.place_coordinates.longitude}`);
   };
 
+  const reviewPercentage = (reviews: any[]) => {
+  if (reviews.length === 0) return 0;
+  const recommendedCount = reviews.filter((review) => review.recommended === true).length;
+  const notRecommendedCount = reviews.filter((review) => review.recommended === false).length;
+  return Math.round((recommendedCount / (recommendedCount + notRecommendedCount)) * 100);
+  };
+
+  //inspired by steam's rating system
+  const reviewClassification = (percentage: number): string => {
+    if (percentage === 0) {
+      return "No Reviews";
+    } else if (percentage <= 19) {
+      return "Negative";
+    } else if (percentage <= 39 ) {
+      return "Mostly Negative";
+    } else if (percentage <= 69) {
+      return "Mixed";
+    } else if (percentage <= 79) {
+      return "Mostly Positive";
+    } else if (percentage <= 100) {
+      return "Positive";
+    }
+  }
+
   useEffect(() => {
     const fetchPlaceDetails = async () => {
       if (typeof id === 'string') {
@@ -224,6 +248,7 @@ export default function placeDetails() {
       <Button title="Write a Review" onPress={() => router.push(`writeReview/?place=${id}`)}/>
 
       <Text style={styles.sectionTitle}>Reviews</Text>
+      <Text>{reviewPercentage(reviews)}% of reviewers recommend this place ({reviewClassification(reviewPercentage(reviews))})</Text>
       {reviews.length > 0 ? (
         reviews.map((review, index) => (
           <View key={index} style={{ marginVertical: 10 }}>
