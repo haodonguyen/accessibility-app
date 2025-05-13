@@ -5,6 +5,7 @@ import { doc, getDoc, query, collection, where, getDocs } from 'firebase/firesto
 import { useRouter } from 'expo-router';
 import { db } from '../FirebaseConfig';
 import { getStorage, ref, listAll, getDownloadURL } from 'firebase/storage';
+import { getProfileInformation } from '../components/userFuncs';
 
 const styles = StyleSheet.create({
   container: {
@@ -91,6 +92,7 @@ export default function placeDetails() {
   const [loading, setLoading] = useState(true);
   const [photoURLs, setPhotoURLs] = useState<string[]>([]);
   const [reviews, setReviews] = useState<any[]>([]);
+  const [submitterDisplayName, setSubmitterName] = useState<string | null>(null);
 
   const router = useRouter();
 
@@ -133,6 +135,12 @@ export default function placeDetails() {
             const placeData = docSnap.data();
             console.log('Fetched place details:', placeData);
             setPlace(placeData);
+
+            if (placeData.place_original_submitter_id) {
+              const profileInfo = await getProfileInformation(placeData.place_original_submitter_id);
+              setSubmitterName(profileInfo?.displayName || 'Missing Display Name');
+            }
+
           } else {
             console.error('No such document!');
           }
@@ -172,8 +180,20 @@ export default function placeDetails() {
         );
         const querySnapshot = await getDocs(getReviewsQuery);
 
-        const reviewsData = querySnapshot.docs.map((doc) => doc.data());
-        console.log('Fetched reviews:', reviewsData);
+        //get review data, and also fetch profile information for the author of each review
+        //maybe we can also use this to display profile pictures later
+        const reviewsData = await Promise.all(
+          querySnapshot.docs.map(async (doc) => {
+            const review = doc.data();
+            const profileInfo = await getProfileInformation(review.review_authorid);
+            return {
+              ...review,
+              displayName: profileInfo?.displayName || 'Missing Display Name', //append display name to the review data
+            };
+          })
+        );
+
+        console.log('Fetched reviews with display names:', reviewsData);
         setReviews(reviewsData);
       } catch (error) {
         console.error('Error fetching reviews:', error);
@@ -202,6 +222,7 @@ export default function placeDetails() {
       <Text style={styles.sectionTitle}>General Information</Text>
       <Text style={styles.infoText}>Address: {place?.place_address || 'Data missing'}</Text>
       <Text style={styles.infoText}>Phone: {place?.place_phonenumber || 'Data missing'}</Text>
+      <Text style={styles.infoText}>Submitted by: {submitterDisplayName}</Text>
       <Text style={styles.infoText}>Submitted at: {place?.place_submission_timestamp ? new Date(place.place_submission_timestamp).toLocaleString() : 'Data missing'}
       </Text>
       {place?.place_description && <Text style={styles.infoText}>Description: {place.place_description}</Text>}
@@ -261,7 +282,7 @@ export default function placeDetails() {
             <Text>Wheelchair Accessibility Rating: {review.review_wheelchair_rating || 'n.a'}/5 </Text>
             <Text>Visual Accessibility Rating: {review.review_blind_rating || 'n.a'}/5 </Text>
             <Text>Auditory Accessibility Rating: {review.review_auditory_rating || 'n.a'}/5 </Text>
-            <Text>Author ID: {review.review_authorid || 'Missing ID'}</Text>
+            <Text>Author: {review.displayName || 'Missing display name'}</Text>
             <Text>{review.review_timestamp ? new Date(review.review_timestamp).toLocaleString(): 'Missing timestamp'}</Text>
           </View>
         ))
