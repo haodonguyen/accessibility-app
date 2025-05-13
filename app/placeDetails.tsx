@@ -6,6 +6,7 @@ import { useRouter } from 'expo-router';
 import { db } from '../FirebaseConfig';
 import { getStorage, ref, listAll, getDownloadURL } from 'firebase/storage';
 import { getProfileInformation } from '../components/userFuncs';
+import { FontAwesome } from '@expo/vector-icons'; // Import FontAwesome for icons
 
 const styles = StyleSheet.create({
   container: {
@@ -84,6 +85,65 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
   },
+  reviewSection: {
+    marginTop: 20,
+  },
+  recommendationSummary: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  recommendationPercentage: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginRight: 8,
+    color: '#28a745', // Example positive color
+  },
+  recommendationText: {
+    fontSize: 16,
+    color: '#555',
+  },
+  negativeRecommendationPercentage: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginRight: 8,
+    color: '#dc3545', // Example negative color
+  },
+  mixedRecommendationPercentage: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginRight: 8,
+    color: '#ffc107', // Example mixed color
+  },
+  reviewCard: {
+    padding: 15,
+    marginBottom: 10,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#eee',
+  },
+  reviewRecommendation: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
+  positiveReview: {
+    color: '#28a745',
+  },
+  negativeReview: {
+    color: '#dc3545',
+  },
+  ratingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 3,
+  },
+  ratingLabel: {
+    fontSize: 14,
+    color: '#777',
+    marginRight: 5,
+  },
 });
 
 export default function placeDetails() {
@@ -102,10 +162,10 @@ export default function placeDetails() {
   };
 
   const reviewPercentage = (reviews: any[]) => {
-  if (reviews.length === 0) return 0;
-  const recommendedCount = reviews.filter((review) => review.recommended === true).length;
-  const notRecommendedCount = reviews.filter((review) => review.recommended === false).length;
-  return Math.round((recommendedCount / (recommendedCount + notRecommendedCount)) * 100);
+    if (reviews.length === 0) return 0;
+    const recommendedCount = reviews.filter((review) => review.recommended === true).length;
+    const notRecommendedCount = reviews.filter((review) => review.recommended === false).length;
+    return Math.round((recommendedCount / (recommendedCount + notRecommendedCount)) * 100);
   };
 
   //inspired by steam's rating system
@@ -114,7 +174,7 @@ export default function placeDetails() {
       return "No Reviews";
     } else if (percentage <= 19) {
       return "Negative";
-    } else if (percentage <= 39 ) {
+    } else if (percentage <= 39) {
       return "Mostly Negative";
     } else if (percentage <= 69) {
       return "Mixed";
@@ -123,7 +183,7 @@ export default function placeDetails() {
     } else if (percentage <= 100) {
       return "Positive";
     }
-  }
+  };
 
   useEffect(() => {
     const fetchPlaceDetails = async () => {
@@ -266,30 +326,63 @@ export default function placeDetails() {
       )}
 
       <Button title="Navigate Here" style={styles.navigateButton} onPress={startRouting} />
-      <Button title="Write a Review" onPress={() => router.push(`writeReview/?place=${id}`)}/>
+      <Button title="Write a Review" onPress={() => router.push(`writeReview/?place=${id}`)} />
 
-      <Text style={styles.sectionTitle}>Reviews</Text>
-      {reviews.length > 0 && (
-        <Text>
-          {reviewPercentage(reviews)}% of reviewers recommend this place ({reviewClassification(reviewPercentage(reviews))})
-        </Text>
-      )}
-      {reviews.length > 0 ? (
-        reviews.map((review, index) => (
-          <View key={index} style={{ marginVertical: 10 }}>
-            <Text>{review.recommended !== undefined ? (review.recommended ? '👍 Recommended' : '👎 Not Recommended') : 'Recommendation Missing'}</Text>
-            <Text>Comment: {review.review_text || 'Missing text'}</Text>
-            <Text>Wheelchair Accessibility Rating: {review.review_wheelchair_rating || 'n.a'}/5 </Text>
-            <Text>Visual Accessibility Rating: {review.review_blind_rating || 'n.a'}/5 </Text>
-            <Text>Auditory Accessibility Rating: {review.review_auditory_rating || 'n.a'}/5 </Text>
-            <Text>Author: {review.displayName || 'Missing display name'}</Text>
-            <Text>{review.review_timestamp ? new Date(review.review_timestamp).toLocaleString(): 'Missing timestamp'}</Text>
+      <View style={styles.reviewSection}>
+        <Text style={styles.sectionTitle}>Reviews</Text>
+        {reviews.length > 0 ? (
+          <View style={styles.recommendationSummary}>
+            <Text
+              style={[
+                styles.recommendationPercentage,
+                reviewClassification(reviewPercentage(reviews)) === 'Positive' ||
+                reviewClassification(reviewPercentage(reviews)) === 'Mostly Positive'
+                  ? styles.positiveRecommendationPercentage
+                  : reviewClassification(reviewPercentage(reviews)) === 'Negative' ||
+                    reviewClassification(reviewPercentage(reviews)) === 'Mostly Negative'
+                  ? styles.negativeRecommendationPercentage
+                  : reviewClassification(reviewPercentage(reviews)) === 'Mixed'
+                  ? styles.mixedRecommendationPercentage
+                  : {},
+              ]}
+            >
+              {reviewPercentage(reviews)}%
+            </Text>
+            <Text style={styles.recommendationText}>({reviewClassification(reviewPercentage(reviews))})</Text>
           </View>
-        ))
-      ) : (
-        <Text>No reviews available</Text>
-      )}
-
+        ) : (
+          <Text>No reviews available</Text>
+        )}
+        {reviews.length > 0 ? (
+          reviews.map((review, index) => (
+            <View key={index} style={styles.reviewCard}>
+              <Text style={[styles.reviewRecommendation, review.recommended ? styles.positiveReview : styles.negativeReview]}>
+                {review.recommended !== undefined ? (review.recommended ? <FontAwesome name="thumbs-up" size={16} color="#28a745" /> : <FontAwesome name="thumbs-down" size={16} color="#dc3545" />) : 'Recommendation Missing'}
+                {review.recommended !== undefined && ` ${review.recommended ? 'Recommended' : 'Not Recommended'}`}
+              </Text>
+              <Text>{review.review_text || 'No comment provided'}</Text>
+              <View style={styles.ratingRow}>
+                <Text style={styles.ratingLabel}>Wheelchair:</Text>
+                <FontAwesome name="wheelchair" size={14} color="#777" style={{ marginRight: 3 }} />
+                <Text>{review.review_wheelchair_rating || 'n.a'}/5</Text>
+              </View>
+              <View style={styles.ratingRow}>
+                <Text style={styles.ratingLabel}>Visual:</Text>
+                <FontAwesome name="eye" size={14} color="#777" style={{ marginRight: 3 }} />
+                <Text>{review.review_blind_rating || 'n.a'}/5</Text>
+              </View>
+              <View style={styles.ratingRow}>
+                <Text style={styles.ratingLabel}>Auditory:</Text>
+                <FontAwesome name="volume-up" size={14} color="#777" style={{ marginRight: 3 }} />
+                <Text>{review.review_auditory_rating || 'n.a'}/5</Text>
+              </View>
+              <Text style={{ fontSize: 12, color: '#999', marginTop: 5 }}>
+                {review.review_timestamp ? new Date(review.review_timestamp).toLocaleString() : 'Timestamp missing'}
+              </Text>
+            </View>
+          ))
+        ) : null}
+      </View>
     </ScrollView>
   );
 }
