@@ -322,26 +322,16 @@ export default function App() {
                     </TouchableOpacity>
                 )}
 
+                <TouchableOpacity style={styles.bottomBarButton} onPress={() => router.push('/profileMenu')}>
+                    <FontAwesome name="camera" size={24} color="#f44336" style={styles.bottomBarIcon} />
+                    <Text style={styles.bottomBarText}>Profile</Text>
+                </TouchableOpacity>
+
                 <TouchableOpacity style={styles.bottomBarButton} onPress={logOut}>
                     <FontAwesome name="sign-out" size={24} color="#f44336" style={styles.bottomBarIcon} />
                     <Text style={styles.bottomBarText}>Logout</Text>
                 </TouchableOpacity>
             </View>
-
-            {/* Modal for Place Submission (Keep this for consistency if you used it before) */}
-            {placeSubmissionModal && (
-                <View style={styles.modalOverlay}>
-                    <View style={styles.modalContent}>
-                        <SubmitPlaceMenu
-                            place_coordinates={mapCenterCoordinates}
-                            onClose={() => setIsSubmissionModalVisible(false)}
-                        />
-                        <TouchableOpacity style={styles.closeButton} onPress={() => setIsSubmissionModalVisible(false)}>
-                            <Text>Close</Text>
-                        </TouchableOpacity>
-                    </View>
-                </View>
-            )}
         </View>
     );
 }
