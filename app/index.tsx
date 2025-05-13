@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Text, View, StyleSheet, Button, Modal, TouchableOpacity } from 'react-native';
+import { Text, View, StyleSheet, TouchableOpacity } from 'react-native';
 import MapView, { PROVIDER_DEFAULT, PROVIDER_GOOGLE, Marker, Polyline } from 'react-native-maps';
 import { auth, db, googlemapsAPIKey } from '../FirebaseConfig';
 import { getAuth, signOut } from 'firebase/auth';
@@ -39,26 +39,94 @@ type Place = {
 };
 
 const styles = StyleSheet.create({
-    logoutButtonContainer: {
+    container: {
+        flex: 1,
+    },
+    map: {
+        flex: 1,
+    },
+    searchBarContainer: {
         position: 'absolute',
-        bottom: 20,
-        right: 20,
-        zIndex: 10,
+        top: 30,
+        left: 0,
+        right: 0,
+        zIndex: 2,
+        paddingHorizontal: 10,
+    },
+    bottomBar: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        backgroundColor: 'rgba(255, 255, 255, 0.8)',
+        borderTopWidth: 1,
+        borderTopColor: '#ccc',
+        paddingVertical: 10,
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        alignItems: 'center',
+        zIndex: 3,
+    },
+    bottomBarButton: {
+        alignItems: 'center',
+    },
+    bottomBarIcon: {
+        fontSize: 24,
+        color: '#555',
+        marginBottom: 5,
+    },
+    bottomBarText: {
+        fontSize: 12,
+        color: '#555',
     },
     logoutButton: {
         backgroundColor: '#f44336',
         borderRadius: 5,
-        paddingVertical: 10,
-        paddingHorizontal: 15,
+        paddingVertical: 8,
+        paddingHorizontal: 12,
         flexDirection: 'row',
         alignItems: 'center',
     },
     logoutIcon: {
-        marginRight: 8,
+        marginRight: 5,
+        fontSize: 18,
+        color: 'white',
     },
     logoutText: {
         color: 'white',
-        fontSize: 16,
+        fontSize: 14,
+    },
+    stopRoutingButton: {
+        backgroundColor: '#007bff',
+        borderRadius: 5,
+        paddingVertical: 8,
+        paddingHorizontal: 12,
+        alignItems: 'center',
+    },
+    stopRoutingText: {
+        color: 'white',
+        fontSize: 14,
+    },
+    modalOverlay: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 10,
+    },
+    modalContent: {
+        backgroundColor: 'white',
+        padding: 20,
+        borderRadius: 10,
+        width: '80%',
+    },
+    closeButton: {
+        marginTop: 15,
+        alignSelf: 'flex-end',
     },
 });
 
@@ -194,24 +262,14 @@ export default function App() {
     };
 
     return (
-        <View style={{ flex: 1 }}>
-            <View style={{ position: 'absolute', bottom: 50, left: 20, zIndex: 1 }}>
-                <Button title="(testing) Go to Login" onPress={() => router.push('/login')} />
-                <Button title="(testing) Submit a place" onPress={() => router.push('/submitPlace')} />
-                {/*clear destination coordinate state and also clear URL parameters*/}
-                {destinationCoordinates && (<Button title="Stop Routing" onPress={() => {
-                    setDestinationCoordinates(null);
-                    router.replace('/');
-                }} />)}
-            </View>
-
+        <View style={styles.container}>
             {/* Search Bar */}
-            <View style={{ position: 'absolute', top: 30, left: 0, right: 0, zIndex: 2 }}>
+            <View style={styles.searchBarContainer}>
                 <SearchBar onSearch={handleSearch} />
             </View>
 
             <MapView
-                style={StyleSheet.absoluteFill}
+                style={styles.map}
                 provider={PROVIDER_DEFAULT}
                 initialRegion={INITAL_REGION}
                 onRegionChangeComplete={(region) => setMapCenterCoordinates(region)}
@@ -241,34 +299,49 @@ export default function App() {
 
             </MapView>
 
-            <View>
-                <Text>Current Location: {currentLocation?.latitude}, {currentLocation?.longitude}</Text>
-            </View>
-
-            {placeSubmissionModal && (
-                <View
-                    style={{ position: 'absolute', top: '50%', left: '50%', transform: [{ translateX: -10 }, { translateY: -10 }], zIndex: 10 }}
+            {/* Bottom Button Bar */}
+            <View style={styles.bottomBar}>
+                <TouchableOpacity
+                    style={styles.bottomBarButton}
+                    onPress={() => router.push('/submitPlace')} // Navigate to submit place screen
                 >
-                    <Text>X</Text>
-                </View>
-            )}
+                    <FontAwesome name="plus-circle" size={24} color="#007bff" style={styles.bottomBarIcon} />
+                    <Text style={styles.bottomBarText}>Add Place</Text>
+                </TouchableOpacity>
 
-            {placeSubmissionModal && (
-                <View
-                    style={{ position: 'absolute', top: 0, left: 0, right: 0, backgroundColor: 'white', padding: 0, zIndex: 10 }}
-                >
-                    <SubmitPlaceMenu place_coordinates={mapCenterCoordinates} onClose={() => setIsSubmissionModalVisible(false)} />
-                    <Button title="Close" onPress={() => setIsSubmissionModalVisible(false)} />
-                </View>
-            )}
+                {destinationCoordinates && (
+                    <TouchableOpacity
+                        style={styles.bottomBarButton}
+                        onPress={() => {
+                            setDestinationCoordinates(null);
+                            router.replace('/');
+                        }}
+                    >
+                        <FontAwesome name="stop-circle" size={24} color="#ff9800" style={styles.bottomBarIcon} />
+                        <Text style={styles.bottomBarText}>Stop Route</Text>
+                    </TouchableOpacity>
+                )}
 
-            {/* Logout Button */}
-            <View style={styles.logoutButtonContainer}>
-                <TouchableOpacity style={styles.logoutButton} onPress={logOut}>
-                    <FontAwesome name="sign-out" size={20} color="white" style={styles.logoutIcon} />
-                    <Text style={styles.logoutText}>Logout</Text>
+                <TouchableOpacity style={styles.bottomBarButton} onPress={logOut}>
+                    <FontAwesome name="sign-out" size={24} color="#f44336" style={styles.bottomBarIcon} />
+                    <Text style={styles.bottomBarText}>Logout</Text>
                 </TouchableOpacity>
             </View>
+
+            {/* Modal for Place Submission (Keep this for consistency if you used it before) */}
+            {placeSubmissionModal && (
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContent}>
+                        <SubmitPlaceMenu
+                            place_coordinates={mapCenterCoordinates}
+                            onClose={() => setIsSubmissionModalVisible(false)}
+                        />
+                        <TouchableOpacity style={styles.closeButton} onPress={() => setIsSubmissionModalVisible(false)}>
+                            <Text>Close</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            )}
         </View>
     );
 }
