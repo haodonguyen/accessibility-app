@@ -379,6 +379,9 @@ export default function placeDetails() {
               <Text style={{ fontSize: 12, color: '#999', marginTop: 5 }}>
                 {review.review_timestamp ? new Date(review.review_timestamp).toLocaleString() : 'Timestamp missing'}
               </Text>
+              <Text style={{ fontSize: 12, color: '#999', marginTop: 5 }}>
+                Review by {review.displayName || 'Author name missing'}
+              </Text>
             </View>
           ))
         ) : null}
