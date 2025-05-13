@@ -9,6 +9,7 @@ const Page = () => {
         <Stack.Screen name="submitPlace" options={{title: 'Submit a Place'}} />
         <Stack.Screen name="placeDetails" options={{title: 'Place Details'}} />
         <Stack.Screen name="writeReview" options={{title: 'Write a Review'}} />
+        <Stack.Screen name="profileMenu" options={{title: 'Profile'}} />
       </Stack>
     )
   }

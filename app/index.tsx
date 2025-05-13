@@ -198,6 +198,7 @@ export default function App() {
             <View style={{ position: 'absolute', bottom: 50, left: 20, zIndex: 1 }}>
                 <Button title="(testing) Go to Login" onPress={() => router.push('/login')} />
                 <Button title="(testing) Submit a place" onPress={() => router.push('/submitPlace')} />
+                <Button title="Profile" onPress={() => router.push('/profileMenu')} />
                 {/*clear destination coordinate state and also clear URL parameters*/}
                 {destinationCoordinates && (<Button title="Stop Routing" onPress={() => {
                     setDestinationCoordinates(null);
