@@ -5,7 +5,7 @@ import { doc, getDoc, query, collection, where, getDocs } from 'firebase/firesto
 import { useRouter } from 'expo-router';
 import { auth, db, googlemapsAPIKey } from '../FirebaseConfig'
 import { getStorage, ref, listAll, getDownloadURL } from 'firebase/storage';
-import { getProfileInformation, createDefaultProfile, changeDisplayName, changeDescription, } from '../components/userFuncs';
+import { getProfileInformation, createDefaultProfile, changeDisplayName, changeDescription, changeAvatar } from '../components/userFuncs';
 
 //we are currently assuming this is a profile menu for the currently logged-in user
 
@@ -58,6 +58,7 @@ export default function profileMenu() {
       <TextInput placeholder="Enter new description text" value={newDescription} onChangeText={setNewDescription} />
       <Button title="Change name" onPress={() => changeDisplayName(newDisplayName, profileID)} />
       <Button title="Change description" onPress={() => changeDescription(newDescription, profileID)} />
+      <Button title="Change Profile Picture" onPress={async () => {await changeAvatar(profileID);}} />
     </ScrollView>
   )
 

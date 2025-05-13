@@ -4,7 +4,8 @@ import { useLocalSearchParams } from 'expo-router';
 import { doc, getDoc, query, collection, where, getDocs, addDoc, updateDoc } from 'firebase/firestore';
 import { useRouter } from 'expo-router';
 import { auth, db, googlemapsAPIKey } from '../FirebaseConfig'
-import { getStorage, ref, listAll, getDownloadURL } from 'firebase/storage';
+import { getStorage, ref, listAll, getDownloadURL, uploadBytes } from 'firebase/storage';
+import * as ImagePicker from 'expo-image-picker';
 
 
 //i made this originally for the profile menu but I put it in its own file 
@@ -96,4 +97,41 @@ export const changeDescription = async (newDescription: string, profileID: strin
   }
 };
 
-export const changeAvatar = async (newAvatarPath: string, profileID: string,) => {};
+export const changeAvatar = async (profileID: string) => {
+  if (!profileID) {
+    console.error('Invalid input: profileID is required.');
+    return;
+  }
+
+  try {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1], //always be square
+      quality: 0.1,
+    });
+
+    if (result.canceled) {
+      console.log('Image selection canceled.');
+      return;
+    }
+
+    const imageUri = result.assets[0].uri;
+    const storage = getStorage();
+    const avatarPath = `avatars/${profileID}/${Date.now()}.jpg`;
+    const storageRef = ref(storage, avatarPath);
+    const response = await fetch(imageUri);
+    const blob = await response.blob();
+    await uploadBytes(storageRef, blob);
+    console.log('Avatar uploaded successfully.');
+
+
+    const userDocRef = doc(db, 'users', profileID);
+    await updateDoc(userDocRef, { avatarPath });
+
+    console.log('Avatar path updated successfully.');
+  } catch (error) {
+    console.error('Error changing avatar:', error);
+    throw error;
+  }
+};
