@@ -4,6 +4,7 @@ import { auth } from '../FirebaseConfig';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
+import { createDefaultProfile } from '../components/userFuncs';
 
 export default function LoginPage() {
     const [email, setEmail] = useState('');
@@ -19,6 +20,7 @@ export default function LoginPage() {
         try {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             if (userCredential.user) {
+                await createDefaultProfile(auth.currentUser?.uid);
                 setSuccess('Successfully logged in!');
                 setTimeout(() => router.push('/'), 1500);
             }
