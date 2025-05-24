@@ -14,6 +14,14 @@ export default function LoginPage() {
     const router = useRouter();
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
+    function errorMessage(error: any) {
+        if (!error) return 'Unknown error!';
+        if (error.message) {
+            if (error.message.includes('auth/invalid-credential')) return 'Bad credentials.';
+            if (error.message.includes('auth/email-already-in-use')) return 'Email already in use.';
+        }
+        return 'Failed to sign in. Please try again.';
+    }
     const signIn = async () => {
         setError('');
         setSuccess('');
@@ -25,8 +33,8 @@ export default function LoginPage() {
                 setTimeout(() => router.push('/'), 1500);
             }
         } catch (error: any) {
-            console.error('Sign-in error:', error.message);
-            setError(error.message);
+            console.log('Sign-in error:', error.message);
+            setError(errorMessage(error));
         }
     };
 
@@ -40,8 +48,8 @@ export default function LoginPage() {
                 setTimeout(() => router.push('/'), 2000);
             }
         } catch (error: any) {
-            console.error('Sign-up error:', error.message);
-            setError(error.message);
+            console.log('Sign-up error:', error.message);
+            setError(errorMessage(error));
         }
     };
 
