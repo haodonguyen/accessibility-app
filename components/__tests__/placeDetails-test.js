@@ -1,7 +1,35 @@
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
-//import PlaceDetails from '../../app/placeDetails';
+import PlaceDetails from '../../app/placeDetails';
 import { reviewClassification, reviewPercentage } from '../../components/review';
+import { getDoc } from 'firebase/firestore';
+import { getProfileInformation } from '../../components/userFuncs';
+import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
+
+jest.mock('../../FirebaseConfig', () => ({
+  db: {},
+}));
+jest.mock('firebase/firestore', () => ({
+  doc: jest.fn(),
+  getDoc: jest.fn(),
+  query: jest.fn(),
+  collection: jest.fn(),
+  where: jest.fn(),
+  getDocs: jest.fn(),
+}));
+jest.mock('firebase/storage', () => ({
+  getStorage: jest.fn(),
+  ref: jest.fn(),
+  listAll: jest.fn(),
+  getDownloadURL: jest.fn(),
+}));
+jest.mock('../../components/userFuncs', () => ({
+  getProfileInformation: jest.fn(),
+}));
+jest.mock('expo-router', () => ({
+  useLocalSearchParams: () => ({ id: 'test-id' }),
+  useRouter: () => ({ push: jest.fn() }),
+}));
 
 describe('reviewClassification', () => {
   it('review classifier returns no reviews for 0', () => {
@@ -66,4 +94,49 @@ describe('reviewAverage', () => {
   });
 });
 
+describe('PlaceDetails Component', () => {
+  it('shows loading indicator while fetching', async () => {
+    const { getByText } = render(<PlaceDetails />);
+    await waitFor(() => {
+      expect(getByText('Loading place details...')).toBeTruthy();
+    });
+  });
+
+  it('correctly renders text from fetched place details', async () => {
+    getDoc.mockResolvedValue({
+      exists: () => true,
+      data: () => ({"place_address": "21 Woodbury St, Strathdale VIC 3550, Australia", 
+                    "place_auditory_accessible": false, 
+                    "place_auditory_description": "", 
+                    "place_blind_accessible": true, 
+                    "place_blind_description": "There are braille signs", 
+                    "place_coordinates": {"latitude": -36.76102238948107, "longitude": 144.31159554049373}, 
+                    "place_description": "They serve some nice food", 
+                    "place_name": "Bendigo Club", 
+                    "place_original_submitter_id": "fR7mOsK3qgXtII3ZSX7chXN0i2z2", 
+                    "place_owner_id": null, 
+                    "place_phonenumber": "0867589", 
+                    "place_submission_timestamp": "2025-05-16T01:54:21.997Z", 
+                    "place_wheelchair_accessible": true, 
+                    "place_wheelchair_description": "This place has a wheelchair by the front door"
+      }),
+    });
+    getProfileInformation.mockResolvedValue({ displayName: 'Pickle the cat' });
+    const { getByText } = render(<PlaceDetails />);
+
+    await waitFor(() => {
+      expect(getByText('Bendigo Club')).toBeTruthy();
+      expect(getByText(/Address: 21 Woodbury St, Strathdale VIC 3550, Australia/)).toBeTruthy();
+      expect(getByText(/Phone: 0867589/)).toBeTruthy();
+      expect(getByText(/Submitted by: Pickle the cat/)).toBeTruthy();
+      expect(getByText(`Submitted at: \n16/05/2025, 11:54:21 am`)).toBeTruthy();
+      expect(getByText(/Description: They serve some nice food/)).toBeTruthy();
+      expect(getByText(/Wheelchair Accessibility: Yes/)).toBeTruthy();
+      expect(getByText(/Details: This place has a wheelchair by the front door/)).toBeTruthy();
+      expect(getByText(/Vision Accessibility: Yes/)).toBeTruthy();
+      expect(getByText(/Details: There are braille signs/)).toBeTruthy();
+      expect(getByText(/Hearing Accessibility: No/)).toBeTruthy();
+    });
+  });
+});
 
