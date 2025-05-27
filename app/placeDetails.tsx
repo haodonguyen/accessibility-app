@@ -7,6 +7,7 @@ import { db } from '../FirebaseConfig';
 import { getStorage, ref, listAll, getDownloadURL } from 'firebase/storage';
 import { getProfileInformation } from '../components/userFuncs';
 import { FontAwesome } from '@expo/vector-icons'; // Import FontAwesome for icons
+import { reviewClassification, reviewPercentage } from '@/components/review';
 
 const styles = StyleSheet.create({
   container: {
@@ -159,30 +160,6 @@ export default function placeDetails() {
   const startRouting = () => {
     console.log('Start routing to:', place?.place_coordinates);
     router.push(`/?latitude=${place.place_coordinates.latitude}&longitude=${place.place_coordinates.longitude}`);
-  };
-
-  const reviewPercentage = (reviews: any[]) => {
-    if (reviews.length === 0) return 0;
-    const recommendedCount = reviews.filter((review) => review.recommended === true).length;
-    const notRecommendedCount = reviews.filter((review) => review.recommended === false).length;
-    return Math.round((recommendedCount / (recommendedCount + notRecommendedCount)) * 100);
-  };
-
-  //inspired by steam's rating system
-  const reviewClassification = (percentage: number): string => {
-    if (percentage === 0) {
-      return "No Reviews";
-    } else if (percentage <= 19) {
-      return "Negative";
-    } else if (percentage <= 39) {
-      return "Mostly Negative";
-    } else if (percentage <= 69) {
-      return "Mixed";
-    } else if (percentage <= 79) {
-      return "Mostly Positive";
-    } else if (percentage <= 100) {
-      return "Positive";
-    }
   };
 
   useEffect(() => {

@@ -26,6 +26,8 @@ jest.mock('expo-router', () => ({
   }),
 }));
 
+jest.useFakeTimers();
+
 describe('LoginPage', () => {
   it('user can log in with an account (frontend only)', async () => {
     const { getByPlaceholderText, getByText, queryByText } = render(<LoginPage />);
@@ -39,6 +41,27 @@ describe('LoginPage', () => {
 
     await waitFor(() =>
       expect(queryByText('Successfully logged in!')).toBeTruthy()
+    );
+    jest.runAllTimers();
+  });
+
+  it('invalid credentials (frontend only)', async () => {
+    const { signInWithEmailAndPassword } = require('firebase/auth');
+    signInWithEmailAndPassword.mockImplementationOnce(() =>
+      Promise.reject({ message: 'Firebase: Error (auth/invalid-credential).' })
+    );
+
+    const { getByPlaceholderText, getByText, queryByText } = render(<LoginPage />);
+    const emailInput = getByPlaceholderText('Email Address');
+    const passwordInput = getByPlaceholderText('Password');
+    const signInButton = getByText('Sign In');
+
+    fireEvent.changeText(emailInput, 'wrong@email.com');
+    fireEvent.changeText(passwordInput, 'wrongpassword');
+    fireEvent.press(signInButton);
+
+    await waitFor(() =>
+      expect(queryByText('Bad credentials.')).toBeTruthy()
     );
   });
 });
