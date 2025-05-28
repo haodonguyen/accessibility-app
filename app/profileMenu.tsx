@@ -81,7 +81,7 @@ const styles = StyleSheet.create({
   // Removed bottomBar and logoutButton styles
 });
 
-export default function profileMenu() {
+export default function ProfileMenu() {
   const [firebaseAuthID, setFirebaseAuthID] = useState('');
   const [profileID, setProfileID] = useState('');
   const [displayName, setDisplayName] = useState('');
